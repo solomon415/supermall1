@@ -33,6 +33,7 @@
   import BackTop from 'components/content/backTop/BackTop'
 
   import {getHomeMultidata,getHomeGoods} from "network/home";
+  import {debounce} from 'common/utils'
   export default {
     name: "Home",
     components:{
@@ -72,11 +73,18 @@
       this.getHomeGoods('new')
       this.getHomeGoods('sell')
     },
+    mounted(){
+      // 1.图片加载完成的事件监听
+      const refresh = debounce(this.$refs.scroll.refresh,50)
+      this.$bus.$on('itemImageLoad',()=>{
+        refresh()
+      })
+    },
     methods:{
        /**
        * 事件监听相关的方法
        */
-       tabClick(index) {
+      tabClick(index) {
         switch (index) {
           case 0:
             this.currentType = 'pop'
@@ -96,7 +104,7 @@
         this.isShowBackTop = (-position.y) > 1000 //position 值为scroll.vue 里面$emit传出来的值, 
         //当大于1000 的时设置为true显示 （position默认为负值，所以先把值转为正的，再进行比对）
       },
-      loadMore() {
+      loadMore(){
         this.getHomeGoods(this.currentType)
       },
        /**
@@ -104,7 +112,6 @@
        */
       getHomeMultidata() {
         getHomeMultidata().then(res => {
-          // this.result = res;
           this.banners = res.data.banner.list;
           this.recommends = res.data.recommend.list;
         })
